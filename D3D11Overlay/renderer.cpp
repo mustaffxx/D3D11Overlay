@@ -1,9 +1,11 @@
 #include "renderer.hpp"
 #include <stdexcept>
 
-Renderer::Renderer(HWND hwnd, int width, int height) {
+Renderer::Renderer(HWND hwnd, int width, int height) : m_windowWidth(width), m_windowHeight(height) {
+	initializeDevice(hwnd, width, height);
+	initializeShaders();
+	initializeVertexBuffer();
 }
-
 
 void Renderer::initializeDevice(HWND hwnd, int width, int height) {
     // Describe and create the swap chain
@@ -146,6 +148,10 @@ void Renderer::initializeShaders() {
         throw std::runtime_error("Failed to create pixel shader");
     }
 
+	// Set the shaders
+	m_context->VSSetShader(m_vertexShader.Get(), nullptr, 0);
+	m_context->PSSetShader(m_pixelShader.Get(), nullptr, 0);
+
 	// Create the input layout
 	D3D11_INPUT_ELEMENT_DESC layout[] = {
 		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
@@ -181,4 +187,42 @@ void Renderer::initializeVertexBuffer() {
     if (FAILED(hr)) {
 		throw std::runtime_error("Failed to create vertex buffer");
     }
+}
+
+void Renderer::beginFrame() {
+    const float clearColor[] = { 0.0f, 0.0f, 0.0f, 1.0f };
+    m_context->ClearRenderTargetView(m_renderTargetView.Get(), clearColor);
+}
+
+
+std::vector<Renderer::Vertex> Renderer::createRectangleVertices(const Rectangle& rect) {
+    float normalizedX = (2.0f * rect.x / m_windowWidth) - 1.0f;
+    float normalizedY = 1.0f - (2.0f * rect.y / m_windowHeight);
+    float normalizedWidth = 2.0f * rect.width / m_windowWidth;
+    float normalizedHeight = -2.0f * rect.height / m_windowHeight;
+
+    std::vector<Vertex> vertices(6);
+    vertices[0] = {normalizedX - normalizedWidth / 2, normalizedY + normalizedHeight / 2, 0.0f,
+                   rect.color.r, rect.color.g, rect.color.b, rect.color.a};
+    vertices[1] = {normalizedX + normalizedWidth / 2, normalizedY + normalizedHeight / 2, 0.0f,
+                   rect.color.r, rect.color.g, rect.color.b, rect.color.a};
+    vertices[2] = {normalizedX - normalizedWidth / 2, normalizedY - normalizedHeight / 2, 0.0f,
+                   rect.color.r, rect.color.g, rect.color.b, rect.color.a};
+    vertices[3] = {normalizedX + normalizedWidth / 2, normalizedY + normalizedHeight / 2, 0.0f,
+                   rect.color.r, rect.color.g, rect.color.b, rect.color.a};
+    vertices[4] = {normalizedX + normalizedWidth / 2, normalizedY - normalizedHeight / 2, 0.0f,
+                   rect.color.r, rect.color.g, rect.color.b, rect.color.a};
+    vertices[5] = {normalizedX - normalizedWidth / 2, normalizedY - normalizedHeight / 2, 0.0f,
+                   rect.color.r, rect.color.g, rect.color.b, rect.color.a};
+
+    return vertices;
+}
+
+void Renderer::addRectangle(const Rectangle& rect) {
+	std::vector<Vertex> vertices = createRectangleVertices(rect);
+	if (m_rectVertices.size() + vertices.size() > MAX_VERTEX) {
+		throw std::runtime_error("Exceeded maximum number of vertices");
+	}
+
+	m_rectVertices.insert(m_rectVertices.end(), vertices.begin(), vertices.end());
 }
