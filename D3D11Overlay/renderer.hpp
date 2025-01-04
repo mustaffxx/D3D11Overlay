@@ -46,6 +46,8 @@ private:
 	void initializeShaders();
 	void initializeVertexBuffer();
 	void beginFrame();
+	void render();
+	void endFrame();
 	std::vector<Vertex> createRectangleVertices(const Rectangle& rect);
 	void addRectangle(const Rectangle& rect);
 };
