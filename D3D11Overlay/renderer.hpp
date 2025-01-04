@@ -20,15 +20,18 @@ public:
 	Renderer(HWND hwnd, int width, int height);
 	~Renderer() = default;
 private:
+	Microsoft::WRL::ComPtr<IDXGISwapChain> m_swapChain;
 	Microsoft::WRL::ComPtr<ID3D11Device> m_device;
 	Microsoft::WRL::ComPtr<ID3D11DeviceContext> m_context;
-	Microsoft::WRL::ComPtr<IDXGISwapChain> m_swapChain;
 	Microsoft::WRL::ComPtr<ID3D11RenderTargetView> m_renderTargetView;
-	Microsoft::WRL::ComPtr<ID3D11InputLayout> m_inputLayout;
 	Microsoft::WRL::ComPtr<ID3D11VertexShader> m_vertexShader;
 	Microsoft::WRL::ComPtr<ID3D11PixelShader> m_pixelShader;
+	Microsoft::WRL::ComPtr<ID3D11InputLayout> m_inputLayout;
 	Microsoft::WRL::ComPtr<ID3D11Buffer> m_vertexBuffer;
+
+	static constexpr size_t MAX_VERTEX = 1024;
 
 	void initializeDevice(HWND hwnd, int width, int height);
 	void initializeShaders();
+	void initializeVertexBuffer();
 };

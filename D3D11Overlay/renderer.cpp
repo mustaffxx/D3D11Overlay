@@ -166,3 +166,19 @@ void Renderer::initializeShaders() {
 	// Set the input layout
 	m_context->IASetInputLayout(m_inputLayout.Get());
 }
+
+void Renderer::initializeVertexBuffer() {
+	// Create the vertex buffer
+    D3D11_BUFFER_DESC bd;
+	ZeroMemory(&bd, sizeof(D3D11_BUFFER_DESC));
+
+    bd.Usage = D3D11_USAGE_DYNAMIC;
+    bd.ByteWidth = sizeof(Vertex) * MAX_VERTEX;
+	bd.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+    bd.CPUAccessFlags = D3D10_CPU_ACCESS_WRITE;
+
+	HRESULT hr = m_device->CreateBuffer(&bd, nullptr, m_vertexBuffer.GetAddressOf());
+    if (FAILED(hr)) {
+		throw std::runtime_error("Failed to create vertex buffer");
+    }
+}
