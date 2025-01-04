@@ -197,33 +197,38 @@ void Renderer::beginFrame() {
 void Renderer::render() {
     if (m_rectVertices.empty()) return;
 
-	D3D11_MAPPED_SUBRESOURCE ms;
-	HRESULT hr = m_context->Map(m_vertexBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &ms);
+    // Map the vertex buffer to gain write access
+    D3D11_MAPPED_SUBRESOURCE ms;
+    HRESULT hr = m_context->Map(m_vertexBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &ms);
     if (FAILED(hr)) {
-		throw std::runtime_error("Failed to map vertex buffer");
-	}
+        throw std::runtime_error("Failed to map vertex buffer");
+    }
 
-	memcpy(ms.pData, m_rectVertices.data(), sizeof(Vertex) * m_rectVertices.size());
-	m_context->Unmap(m_vertexBuffer.Get(), 0);
+    // Copy the vertex data into the mapped buffer
+    memcpy(ms.pData, m_rectVertices.data(), sizeof(Vertex) * m_rectVertices.size());
+    m_context->Unmap(m_vertexBuffer.Get(), 0);
 
-	UINT stride = sizeof(Vertex);
-	UINT offset = 0;
-	m_context->IASetVertexBuffers(0, 1, m_vertexBuffer.GetAddressOf(), &stride, &offset);
+    // Set the vertex buffer
+    UINT stride = sizeof(Vertex);
+    UINT offset = 0;
+    m_context->IASetVertexBuffers(0, 1, m_vertexBuffer.GetAddressOf(), &stride, &offset);
 
-	m_context->IASetPrimitiveTopology(D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+    // Set the primitive topology to triangle list
+    m_context->IASetPrimitiveTopology(D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
-	m_context->Draw(m_rectVertices.size(), 0);
+    m_context->Draw(m_rectVertices.size(), 0);
 
-	m_rectVertices.clear();
+    m_rectVertices.clear();
 
-	m_swapChain->Present(0, 0);
+    // Present the rendered frame to the screen
+    m_swapChain->Present(0, 0);
 }
 
 std::vector<Renderer::Vertex> Renderer::createRectangleVertices(const Rectangle& rect) {
     float normalizedX = (2.0f * rect.x / m_windowWidth) - 1.0f;
     float normalizedY = 1.0f - (2.0f * rect.y / m_windowHeight);
     float normalizedWidth = 2.0f * rect.width / m_windowWidth;
-    float normalizedHeight = -2.0f * rect.height / m_windowHeight;
+    float normalizedHeight = 2.0f * rect.height / m_windowHeight;
 
     std::vector<Vertex> vertices(6);
     vertices[0] = {normalizedX - normalizedWidth / 2, normalizedY + normalizedHeight / 2, 0.0f,

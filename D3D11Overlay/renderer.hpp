@@ -27,6 +27,10 @@ public:
 
 	Renderer(HWND hwnd, int width, int height);
 	~Renderer() = default;
+	void beginFrame();
+	void render();
+	void addRectangle(const Rectangle& rect);
+
 private:
 	Microsoft::WRL::ComPtr<IDXGISwapChain> m_swapChain;
 	Microsoft::WRL::ComPtr<ID3D11Device> m_device;
@@ -45,9 +49,5 @@ private:
 	void initializeDevice(HWND hwnd, int width, int height);
 	void initializeShaders();
 	void initializeVertexBuffer();
-	void beginFrame();
-	void render();
-	void endFrame();
 	std::vector<Vertex> createRectangleVertices(const Rectangle& rect);
-	void addRectangle(const Rectangle& rect);
 };
