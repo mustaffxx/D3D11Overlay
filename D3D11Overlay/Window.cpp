@@ -1,4 +1,4 @@
-#include "Window.hpp"
+#include "window.hpp"
 #include <stdexcept>
 
 Window::Window(HINSTANCE hInstance, const std::wstring& title, int width, int height) {
@@ -30,7 +30,7 @@ Window::Window(HINSTANCE hInstance, const std::wstring& title, int width, int he
         throw std::runtime_error("Failed to create window");
     }
 
-    SetLayeredWindowAttributes(hWindow, 0, 128, LWA_ALPHA);
+    SetLayeredWindowAttributes(hWindow, 0, 255, LWA_ALPHA);
     ShowWindow(hWindow, SW_SHOW);
 }
 
