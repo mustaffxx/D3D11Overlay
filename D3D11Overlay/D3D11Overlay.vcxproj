@@ -25,6 +25,9 @@
   <ItemGroup>
     <ClInclude Include="Window.hpp" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="shaders.shader" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>

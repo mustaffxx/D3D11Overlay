@@ -1,0 +1,168 @@
+#include "renderer.hpp"
+#include <stdexcept>
+
+Renderer::Renderer(HWND hwnd, int width, int height) {
+}
+
+
+void Renderer::initializeDevice(HWND hwnd, int width, int height) {
+    // Describe and create the swap chain
+    DXGI_SWAP_CHAIN_DESC scd;
+    ZeroMemory(&scd, sizeof(DXGI_SWAP_CHAIN_DESC));
+
+    scd.BufferCount = 1;
+    scd.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+    scd.BufferDesc.Width = width;
+    scd.BufferDesc.Height = height;
+    scd.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
+    scd.OutputWindow = hwnd;
+    scd.SampleDesc.Count = 1;
+    scd.Windowed = TRUE;
+    scd.SwapEffect = DXGI_SWAP_EFFECT_DISCARD;
+
+    UINT createDeviceFlags = 0;
+#ifdef _DEBUG
+    createDeviceFlags |= D3D11_CREATE_DEVICE_DEBUG;
+#endif
+
+    // Create the device and swap chain
+    HRESULT hr = D3D11CreateDeviceAndSwapChain(
+        nullptr,
+        D3D_DRIVER_TYPE_HARDWARE,
+        nullptr,
+        createDeviceFlags,
+        nullptr,
+        0,
+        D3D11_SDK_VERSION,
+        &scd,
+        m_swapChain.GetAddressOf(),
+        m_device.GetAddressOf(),
+        nullptr,
+        m_context.GetAddressOf());
+
+    if (FAILED(hr)) {
+        throw std::runtime_error("Failed to create device and swap chain");
+    }
+
+    // Get the back buffer and create a render target view
+    Microsoft::WRL::ComPtr<ID3D11Texture2D> backBuffer;
+    hr = m_swapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), reinterpret_cast<LPVOID*>(backBuffer.GetAddressOf()));
+    if (FAILED(hr)) {
+        throw std::runtime_error("Failed to get back buffer");
+    }
+
+    hr = m_device->CreateRenderTargetView(backBuffer.Get(), nullptr, m_renderTargetView.GetAddressOf());
+    if (FAILED(hr)) {
+        throw std::runtime_error("Failed to create render target view");
+    }
+
+    backBuffer.Reset();
+	// Set the render target as the back buffer
+    m_context->OMSetRenderTargets(1, m_renderTargetView.GetAddressOf(), nullptr);
+
+
+    // Set up the viewport
+    D3D11_VIEWPORT viewport;
+    ZeroMemory(&viewport, sizeof(D3D11_VIEWPORT));
+
+    viewport.TopLeftX = 0;
+    viewport.TopLeftY = 0;
+    viewport.Width = static_cast<float>(width);
+    viewport.Height = static_cast<float>(height);
+    //viewport.MinDepth = 0.0f;
+    //viewport.MaxDepth = 1.0f;
+
+    m_context->RSSetViewports(1, &viewport);
+}
+
+void Renderer::initializeShaders() {
+	// Compile the vertex shader
+	Microsoft::WRL::ComPtr<ID3DBlob> vertexShaderBlob;
+	Microsoft::WRL::ComPtr<ID3DBlob> pixelShaderBlob;
+	Microsoft::WRL::ComPtr<ID3DBlob> errorBlob;
+
+    UINT compileFlags = D3DCOMPILE_ENABLE_STRICTNESS;
+#ifdef _DEBUG
+    compileFlags |= D3DCOMPILE_DEBUG;
+#endif
+
+    HRESULT hr = D3DCompileFromFile(
+        L"shaders.shader",
+        nullptr,
+        D3D_COMPILE_STANDARD_FILE_INCLUDE,
+        "VShader",
+        "vs_5_0",
+        compileFlags,
+        0,
+        vertexShaderBlob.GetAddressOf(),
+        errorBlob.GetAddressOf());
+
+    if (FAILED(hr)) {
+        if (errorBlob) {
+			throw std::runtime_error(static_cast<char*>(errorBlob->GetBufferPointer()));
+        }
+
+		throw std::runtime_error("Failed to compile vertex shader");
+    }
+
+	// Compile the pixel shader
+	hr = D3DCompileFromFile(
+		L"shaders.shader",
+		nullptr,
+		D3D_COMPILE_STANDARD_FILE_INCLUDE,
+		"PShader",
+		"ps_5_0",
+		compileFlags,
+		0,
+		pixelShaderBlob.GetAddressOf(),
+		errorBlob.GetAddressOf());
+
+	if (FAILED(hr)) {
+		if (errorBlob) {
+			throw std::runtime_error(static_cast<char*>(errorBlob->GetBufferPointer()));
+		}
+
+		throw std::runtime_error("Failed to compile pixel shader");
+	}
+
+	// Create the shaders
+	hr = m_device->CreateVertexShader(
+        vertexShaderBlob->GetBufferPointer(), 
+        vertexShaderBlob->GetBufferSize(), 
+        nullptr, 
+        m_vertexShader.GetAddressOf());
+
+    if (FAILED(hr)) {
+		throw std::runtime_error("Failed to create vertex shader");
+    }
+
+	hr = m_device->CreatePixelShader(
+		pixelShaderBlob->GetBufferPointer(),
+		pixelShaderBlob->GetBufferSize(),
+		nullptr,
+		m_pixelShader.GetAddressOf());
+
+    if (FAILED(hr)) {
+        throw std::runtime_error("Failed to create pixel shader");
+    }
+
+	// Create the input layout
+	D3D11_INPUT_ELEMENT_DESC layout[] = {
+		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ "COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0 }
+	};
+
+	hr = m_device->CreateInputLayout(
+		layout,
+		ARRAYSIZE(layout),
+		vertexShaderBlob->GetBufferPointer(),
+		vertexShaderBlob->GetBufferSize(),
+		m_inputLayout.GetAddressOf());
+
+    if (FAILED(hr)) {
+        throw std::runtime_error("Failed to create input layout");
+    }
+
+	// Set the input layout
+	m_context->IASetInputLayout(m_inputLayout.Get());
+}
