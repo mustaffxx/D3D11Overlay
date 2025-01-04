@@ -7,7 +7,7 @@ public:
     Window(HINSTANCE hInstance, const std::wstring& title, int width, int height);
     ~Window();
     bool ProcessMessages();
-
+	HWND GetWindow() const { return hWindow; }
 private:
     static LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
