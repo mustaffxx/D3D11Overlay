@@ -75,6 +75,27 @@ void Renderer::initializeDevice(HWND hwnd, int width, int height) {
     //viewport.MaxDepth = 1.0f;
 
     m_context->RSSetViewports(1, &viewport);
+
+    // Create blend state for transparency - future reference
+ //   D3D11_BLEND_DESC blendDesc;
+	//ZeroMemory(&blendDesc, sizeof(D3D11_BLEND_DESC));
+	//blendDesc.AlphaToCoverageEnable = FALSE;
+ //   blendDesc.RenderTarget[0].BlendEnable = TRUE;
+ //   blendDesc.RenderTarget[0].SrcBlend = D3D11_BLEND_SRC_ALPHA;
+ //   blendDesc.RenderTarget[0].DestBlend = D3D11_BLEND_INV_SRC_ALPHA;
+ //   blendDesc.RenderTarget[0].BlendOp = D3D11_BLEND_OP_ADD;
+ //   blendDesc.RenderTarget[0].SrcBlendAlpha = D3D11_BLEND_INV_SRC_ALPHA;
+ //   blendDesc.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_ZERO;
+ //   blendDesc.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_ADD;
+ //   blendDesc.RenderTarget[0].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
+
+ //   hr = m_device->CreateBlendState(&blendDesc, m_blendState.GetAddressOf());
+ //   if (FAILED(hr)) {
+ //       throw std::runtime_error("Failed to create blend state");
+ //   }
+
+ //   float blendFactor[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
+ //   m_context->OMSetBlendState(m_blendState.Get(), blendFactor, 0xffffffff);
 }
 
 void Renderer::initializeShaders() {
@@ -190,7 +211,7 @@ void Renderer::initializeVertexBuffer() {
 }
 
 void Renderer::beginFrame() {
-    const float clearColor[] = { 0.0f, 0.0f, 0.0f, 1.0f };
+    const float clearColor[] = { 0.0f, 0.0f, 0.0f, 0.0f };
     m_context->ClearRenderTargetView(m_renderTargetView.Get(), clearColor);
 }
 

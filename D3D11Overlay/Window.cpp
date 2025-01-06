@@ -30,7 +30,9 @@ Window::Window(HINSTANCE hInstance, const std::wstring& title, int width, int he
         throw std::runtime_error("Failed to create window");
     }
 
-    SetLayeredWindowAttributes(hWindow, 0, 255, LWA_ALPHA);
+    SetLayeredWindowAttributes(hWindow, 0, 0, LWA_ALPHA);
+    SetLayeredWindowAttributes(hWindow, 0, RGB(0, 0, 0), LWA_COLORKEY);
+
     ShowWindow(hWindow, SW_SHOW);
 }
 
