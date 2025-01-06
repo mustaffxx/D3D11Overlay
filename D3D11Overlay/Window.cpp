@@ -1,5 +1,8 @@
 #include "window.hpp"
 #include <stdexcept>
+#include <dwmapi.h>
+
+#pragma comment(lib, "dwmapi.lib")
 
 Window::Window(HINSTANCE hInstance, const std::wstring& title, int width, int height) {
     WNDCLASSEX wc = {};
@@ -13,7 +16,7 @@ Window::Window(HINSTANCE hInstance, const std::wstring& title, int width, int he
         throw std::runtime_error("Failed to register window class");
     }
 
-    hWindow = CreateWindowEx(WS_EX_LAYERED | WS_EX_TRANSPARENT | WS_EX_TOPMOST,
+    hWindow = CreateWindowEx(WS_EX_TRANSPARENT | WS_EX_TOPMOST,
                             WINDOW_CLASS_NAME,
                             title.c_str(),
                             WS_POPUP,
@@ -30,10 +33,13 @@ Window::Window(HINSTANCE hInstance, const std::wstring& title, int width, int he
         throw std::runtime_error("Failed to create window");
     }
 
-    SetLayeredWindowAttributes(hWindow, 0, 0, LWA_ALPHA);
-    SetLayeredWindowAttributes(hWindow, 0, RGB(0, 0, 0), LWA_COLORKEY);
+    SetWindowLong(hWindow, GWL_EXSTYLE, (int)GetWindowLong(hWindow, GWL_EXSTYLE) | WS_EX_LAYERED);
+    SetLayeredWindowAttributes(hWindow, NULL, 255, LWA_ALPHA);
 
     ShowWindow(hWindow, SW_SHOW);
+
+    MARGINS margins = { -1 };
+    DwmExtendFrameIntoClientArea(hWindow, &margins);
 }
 
 Window::~Window() {

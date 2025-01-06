@@ -17,7 +17,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 		Renderer::Rectangle rect = {
 			WIDTH / 2.0f, HEIGHT / 2.0f,
 			200.0f, 100.0f,
-			{1.0f, 0.0f, 0.0f, 1.0f}
+			{1.0f, 0.0f, 0.0f, 0.25f}
 		};
 
 		renderer.addRectangle(rect);
